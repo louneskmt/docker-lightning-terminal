@@ -10,8 +10,15 @@ on:
 
 jobs:
         build:
-                runs-on: ubuntu-18.04
+                runs-on: ubuntu-20.04
                 name: Build and push lightning-terminal image
+                strategy:
+                  fail-fast: false
+                matrix:
+                  platform:
+                    - linux/amd64
+                    - linux/arm64
+                    - linux/arm/v7
                 steps:
                         - name: Setup Environment
                           run: echo "TAG=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
