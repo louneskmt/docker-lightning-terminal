@@ -68,5 +68,5 @@ jobs:
                                   --cache-from "type=local,src=/tmp/.buildx-cache" \
                                   --cache-to "type=local,dest=/tmp/.buildx-cache" \
                                   --platform ${{matrix.platform}} \
-                                  --tag ${{ secrets.DOCKER_HUB_USER }}/lightning-terminal:latest \
+                                  --tag ${{ secrets.DOCKER_USERNAME }}/lightning-terminal:latest \
                                   --output "type=registry" ./
