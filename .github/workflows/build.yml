@@ -12,11 +12,11 @@ jobs:
                 name: Build and push lightning-terminal image for main
                 strategy:
                   fail-fast: false
-                matrix:
-                  platform:
-                    - linux/amd64
-                    - linux/arm64
-                    - linux/arm/v7
+                  matrix:
+                    platform:
+                      - linux/amd64
+                      - linux/arm64
+                      - linux/arm/v7
                 steps:
 
                         - name: Login to Docker Hub
