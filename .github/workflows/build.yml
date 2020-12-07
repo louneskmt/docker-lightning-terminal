@@ -4,14 +4,12 @@ env:
 
 on:
         push:
-                tags:
-                  - v[0-9]+.[0-9]+.[0-9]+
-                  - v[0-9]+.[0-9]+.[0-9]+-*
-
+               branches:
+                      - main
 jobs:
         build:
                 runs-on: ubuntu-20.04
-                name: Build and push lightning-terminal image
+                name: Build and push lightning-terminal image for main
                 strategy:
                   fail-fast: false
                   matrix:
@@ -20,12 +18,6 @@ jobs:
                       - linux/arm64
                       - linux/arm/v7
                 steps:
-                        - name: Setup Environment
-                          run: echo "TAG=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
-                                  
-                        - name: Show set environment variables
-                          run: |
-                                  printf "    TAG: %s\n"  "$TAG"   
 
                         - name: Login to Docker Hub
                           run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
@@ -53,20 +45,11 @@ jobs:
                             restore-keys: |
                               ${{ runner.os }}-buildx-
 
-                        - name: Run Docker buildx against tag
+                        - name: Run Docker buildx against main
                           run: |
                                   docker buildx build \
                                   --cache-from "type=local,src=/tmp/.buildx-cache" \
                                   --cache-to "type=local,dest=/tmp/.buildx-cache" \
                                   --platform ${{matrix.platform}} \
-                                  --tag ${{ secrets.DOCKER_HUB_USER }}/lightning-terminal:$TAG \
-                                  --output "type=registry" ./
-
-                        - name: Run Docker buildx against latest
-                          run: |
-                                  docker buildx build \
-                                  --cache-from "type=local,src=/tmp/.buildx-cache" \
-                                  --cache-to "type=local,dest=/tmp/.buildx-cache" \
-                                  --platform ${{matrix.platform}} \
-                                  --tag ${{ secrets.DOCKER_USERNAME }}/lightning-terminal:latest \
+                                  --tag ${{ secrets.DOCKER_USERNAME }}/lightning-terminal:main \
                                   --output "type=registry" ./
