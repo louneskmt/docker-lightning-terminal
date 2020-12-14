@@ -3,104 +3,77 @@
 LIT_DIR=${LIT_DIR:"~/.lit"}
 LIT_CONFIG_FILE=$LIT_DIR/lit.conf
 
-HTTPS_LISTEN=${HTTPS_LISTEN:-0.0.0.0:443}
-LETSENCRYPT=${LETSENCRYPT}
-LETSENCRYPT_HOST=${LETSENCRYPT_HOST}
-LND_MODE=${LND_MODE:-remote}
-UIPASSWORD=${UIPASSWORD:-password}
-
-REMOTE_LITDEBUGLEVEL=${REMOTE_LITDEBUGLEVEL:-debug}
-REMOTE_LND_NETWORK=${REMOTE_LND_NETWORK:-mainnet}
-REMOTE_LND_RPCSERVER=${REMOTE_LND_RPCSERVER}
-REMOTE_LND_MACAROONDIR=${REMOTE_LND_MACAROONDIR:-"/root/.lnd/data/chain/bitcoin/${REMOTE_LND_NETWORK}/"}
+HTTPSLISTEN=${HTTPSLISTEN:-0.0.0.0:443}
+LND_LNDDIR=${LND_LNDDIR:-"/root/.lnd"}
+REMOTE_LND_MACAROONDIR=${REMOTE_LND_MACAROONDIR:-"/root/.lnd/data/chain/bitcoin/${REMOTE_LND_NETWORK:-mainnet}/"}
 REMOTE_LND_TLSCERTPATH=${REMOTE_LND_TLSCERTPATH:-"/root/.lnd/tls.cert"}
 
-LND_LNDDIR=${LND_LNDDIR:-"/root/.lnd"}
-LND_ALIAS=${LND_ALIAS}
-LND_EXTERNALIP=${LND_EXTERNALIP}
-LND_RPCLISTEN=${LND_RPCLISTEN-=0.0.0.0:10009}
-LND_LISTEN=${LND_RPCLISTEN-=0.0.0.0:9735}
-LND_DEBUGLEVEL=${LND_DEBUGLEVEL:-debug}
-
-LND_BITCOIN_ACTIVE=${LND_BITCOIN_ACTIVE:-true}
-LND_BITCOIN_TESTNET=${LND_BITCOIN_TESTNET:-false}
-LND_BITCOIN_NODE=${LND_BITCOIN_NODE:-bitcoind}
-
-LND_BITCOIND_RPCHOST=${LND_BITCOIND_RPCHOST:-localhost}
-LND_BITCOIND_RPCUSER=${LND_BITCOIND_RPCUSER}
-LND_BITCOIND_RPCPASS=${LND_BITCOIND_RPCPASS}
-LND_BITCOIND_ZMQPUBRAWBLOCK=${LND_BITCOIND_ZMQPUBRAWBLOCK:-localhost:28332}
-LND_BITCOIND_ZMQPUBRAWTX=${LND_BITCOIND_ZMQPUBRAWTX:-localhost:28333}
-
-LOOP_LOOPOUTMAXPARTS=${LOOP_LOOPOUTMAXPARTS}
-POOL_NEWNODESONLY=${POOL_NEWNODESONLY}
-
-FARADAY_MIN_MONITORED=${FARADAY_MIN_MONITORED}
-FARADAY_CONNECT_BITCOIN=${FARADAY_CONNECT_BITCOIN}
-FARADAY_BITCOIN_HOST=${FARADAY_BITCOIN_HOST}
-FARADAY_BITCOIN_USER=${FARADAY_BITCOIN_USER}
-FARADAY_BITCOIN_PASSWORD=${FARADAY_BITCOIN_PASSWORD}
-
-add_option_if_exists () {
-  if [ ! -z "$2" ]; then echo $1=$2 >> $LIT_CONFIG_FILE; fi
+add_or_add_option_if_non_empty () {
+  # Check if config file exists, else create it by adding the option
+  if [ -e $LIT_CONFIG_FILE ];
+  then
+    # If non-empty env variable + config file already contains the option $1 => edit the option with sed
+    if [ ! -z "$2" ] && [ "$(cat $LIT_CONFIG_FILE | grep "$1")" != "" ]; 
+    then sed -i '' -e "s|$1=.*|$1=$2|g" $LIT_CONFIG_FILE; 
+    # Else if non-empty env variable, add the option to the config file
+    elif [ ! -z "$2" ]; then echo "$1=$2" >> $LIT_CONFIG_FILE;
+    fi;
+  else
+    if [ ! -z "$2" ]; then echo "$1=$2" > $LIT_CONFIG_FILE; fi;
+  fi;
 }
 
+# Make sure that the config dir exists
 mkdir -p ${LIT_DIR}
 
-echo "## Application Options ##" > $LIT_CONFIG_FILE
-add_option_if_exists uipassword $UIPASSWORD
-add_option_if_exists httpslisten $HTTPS_LISTEN
-add_option_if_exists lnd-mode $LND_MODE
-add_option_if_exists letsencrypt $LETSENCRYPT
-add_option_if_exists letsencrypthost $LETSENCRYPT_HOST
+## Application Options ##
+add_or_add_option_if_non_empty uipassword $UIPASSWORD
+add_or_add_option_if_non_empty httpslisten $HTTPSLISTEN
+add_or_add_option_if_non_empty lnd-mode $LND_MODE
+add_or_add_option_if_non_empty letsencrypt $LETSENCRYPT
+add_or_add_option_if_non_empty letsencrypthost $LETSENCRYPT_HOST
 
-if [ $LND_MODE = "integrated" ];
+if [ "$LND_MODE" = "integrated" ];
 then
-  echo "\n## LND ##" >> $LIT_CONFIG_FILE
-  add_option_if_exists lnd.lnddir $LND_LNDDIR
-  add_option_if_exists lnd.alias $LND_ALIAS
-  add_option_if_exists lnd.externalip $LND_EXTERNALIP
-  add_option_if_exists lnd.rpclisten $LND_RPCLISTEN
-  add_option_if_exists lnd.listen $LND_LISTEN
-  add_option_if_exists lnd.debuglevel $LND_DEBUGLEVEL
-  echo "\n## LND - Bitcoin ##" >> $LIT_CONFIG_FILE
-  add_option_if_exists lnd.bitcoin.active $LND_BITCOIN_ACTIVE
-  add_option_if_exists lnd.bitcoin.testnet $LND_BITCOIN_TESTNET
-  add_option_if_exists lnd.bitcoin.node $LND_BITCOIN_NODE
-  echo "\n## LND - Bitcoind ##" >> $LIT_CONFIG_FILE
-  add_option_if_exists lnd.bitcoind.rpchost $LND_BITCOIND_RPCHOST
-  add_option_if_exists lnd.bitcoind.rpcuser $LND_BITCOIND_RPCUSER
-  add_option_if_exists lnd.bitcoind.rpcpass $LND_BITCOIND_RPCPASS
-  add_option_if_exists lnd.bitcoind.zmqpubrawblock $LND_BITCOIND_ZMQPUBRAWBLOCK
-  add_option_if_exists lnd.bitcoind.zmqpubrawtx $LND_BITCOIND_ZMQPUBRAWTX
-elif [ $LND_MODE = "remote" ]
-then
-  echo "\n## Remote LND ##" >> $LIT_CONFIG_FILE
-  add_option_if_exists remote.lnd.network $REMOTE_LND_NETWORK
-  add_option_if_exists remote.lnd.rpcserver $REMOTE_LND_RPCSERVER
-  add_option_if_exists remote.lnd.macaroondir $REMOTE_LND_MACAROONDIR
-  add_option_if_exists remote.lnd.tlscertpath $REMOTE_LND_TLSCERTPATH
-  add_option_if_exists remote.lit-debuglevel $REMOTE_LITDEBUGLEVEL
+  ## LND ##
+  add_or_add_option_if_non_empty lnd.lnddir $LND_LNDDIR
+  add_or_add_option_if_non_empty lnd.alias $LND_ALIAS
+  add_or_add_option_if_non_empty lnd.externalip $LND_EXTERNALIP
+  add_or_add_option_if_non_empty lnd.rpclisten $LND_RPCLISTEN
+  add_or_add_option_if_non_empty lnd.listen $LND_LISTEN
+  add_or_add_option_if_non_empty lnd.debuglevel $LND_DEBUGLEVEL
+  ## LND - Bitcoin ##
+  add_or_add_option_if_non_empty lnd.bitcoin.active $LND_BITCOIN_ACTIVE
+  add_or_add_option_if_non_empty lnd.bitcoin.testnet $LND_BITCOIN_TESTNET
+  add_or_add_option_if_non_empty lnd.bitcoin.node $LND_BITCOIN_NODE
+  ## LND - Bitcoind ##
+  add_or_add_option_if_non_empty lnd.bitcoind.rpchost $LND_BITCOIND_RPCHOST
+  add_or_add_option_if_non_empty lnd.bitcoind.rpcuser $LND_BITCOIND_RPCUSER
+  add_or_add_option_if_non_empty lnd.bitcoind.rpcpass $LND_BITCOIND_RPCPASS
+  add_or_add_option_if_non_empty lnd.bitcoind.zmqpubrawblock $LND_BITCOIND_ZMQPUBRAWBLOCK
+  add_or_add_option_if_non_empty lnd.bitcoind.zmqpubrawtx $LND_BITCOIND_ZMQPUBRAWTX
+else
+  ## Remote LND ##
+  add_or_add_option_if_non_empty remote.lnd.network $REMOTE_LND_NETWORK
+  add_or_add_option_if_non_empty remote.lnd.rpcserver $REMOTE_LND_RPCSERVER
+  add_or_add_option_if_non_empty remote.lnd.macaroondir $REMOTE_LND_MACAROONDIR
+  add_or_add_option_if_non_empty remote.lnd.tlscertpath $REMOTE_LND_TLSCERTPATH
+  add_or_add_option_if_non_empty remote.lit-debuglevel $REMOTE_LIT_DEBUGLEVEL
 fi
 
-if [ $LOOP_LOOPOUTMAXPARTS ]; then echo "\n## Loop ##" >> $LIT_CONFIG_FILE; fi
-add_option_if_exists loop.loopoutmaxparts $LOOP_LOOPOUTMAXPARTS
-
-if [ $POOL_NEWNODESONLY ]; then echo "\n## Pool ##" >> $LIT_CONFIG_FILE; fi
-add_option_if_exists pool.newnodesonly $POOL_NEWNODESONLY
-
-if [ $FARADAY_MIN_MONITORED ]; then echo "\n## Faraday ##" >> $LIT_CONFIG_FILE; fi
-add_option_if_exists faraday.min_monitored $FARADAY_MIN_MONITORED
+add_or_add_option_if_non_empty loop.loopoutmaxparts $LOOP_LOOPOUTMAXPARTS
+add_or_add_option_if_non_empty pool.newnodesonly $POOL_NEWNODESONLY
+add_or_add_option_if_non_empty faraday.min_monitored $FARADAY_MIN_MONITORED
 
 if [ $FARADAY_CONNECT_BITCOIN ];
 then
-  echo "\n## Faraday - Bitcoin ##" >> $LIT_CONFIG_FILE
-  add_option_if_exists faraday.connect_bitcoin $FARADAY_CONNECT_BITCOIN
-  add_option_if_exists faraday.bitcoin.host $FARADAY_BITCOIN_HOST
-  add_option_if_exists faraday.bitcoin.user $FARADAY_BITCOIN_USER
-  add_option_if_exists faraday.bitcoin.password $FARADAY_BITCOIN_PASSWORD
+  add_or_add_option_if_non_empty faraday.connect_bitcoin $FARADAY_CONNECT_BITCOIN
+  add_or_add_option_if_non_empty faraday.bitcoin.host $FARADAY_BITCOIN_HOST
+  add_or_add_option_if_non_empty faraday.bitcoin.user $FARADAY_BITCOIN_USER
+  add_or_add_option_if_non_empty faraday.bitcoin.password $FARADAY_BITCOIN_PASSWORD
 fi
 
+# Start litd 
 litd --lit-dir=${LIT_DIR}
 
 
