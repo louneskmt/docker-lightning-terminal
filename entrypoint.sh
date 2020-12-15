@@ -9,8 +9,6 @@ LND_LNDDIR=${LND_LNDDIR:-"/root/.lnd"}
 REMOTE_LND_MACAROONDIR=${REMOTE_LND_MACAROONDIR:-"/root/.lnd/data/chain/bitcoin/${REMOTE_LND_NETWORK:-mainnet}/"}
 REMOTE_LND_TLSCERTPATH=${REMOTE_LND_TLSCERTPATH:-"/root/.lnd/tls.cert"}
 
-echo $UIPASSWORD
-exit 1
 add_or_add_option_if_non_empty () {
   # Check if config file exists, else create it by adding the option
   if [ -e $LIT_CONFIG_FILE ];
