@@ -5,7 +5,8 @@ FROM lightninglabs/lightning-terminal:$VERSION
 COPY entrypoint.sh /bin/entrypoint
 RUN chmod a+x /bin/entrypoint
 
-USER 1000
+RUN adduser --disabled-password --uid 1000 --home /lit --gecos "" lit
+USER lit
 
 EXPOSE 8443 10009 9735
 
