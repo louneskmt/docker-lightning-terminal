@@ -13,15 +13,11 @@ add_or_add_option_if_non_empty () {
   # Check if config file exists, else create it by adding the option
   if [ -e $LIT_CONFIG_FILE ];
   then
-    # If non-empty env variable + config file doesn't contain the option $1 => add the option
-    if [ ! -z "$2" ] && [ "$(cat $LIT_CONFIG_FILE | grep "$1")" = "" ]; 
-    then echo "$1=$2" >> $LIT_CONFIG_FILE;
-
     ## If non-empty env variable + config file already contains the option $1 => edit the option with sed
-    # if [ ! -z "$2" ] && [ "$(cat $LIT_CONFIG_FILE | grep "$1")" = "" ]; 
-    # then sed -i '' -e "s|$1=.*|$1=$2|g" $LIT_CONFIG_FILE; 
+    if [ ! -z "$2" ] && [ "$(cat $LIT_CONFIG_FILE | grep "$1")" != "" ]; 
+    then sed -i '' -e "s|$1=.*|$1=$2|g" $LIT_CONFIG_FILE; 
     ## Else if non-empty env variable, add the option to the config file
-    # elif [ ! -z "$2" ]; then echo "$1=$2" >> $LIT_CONFIG_FILE;
+    elif [ ! -z "$2" ]; then echo "$1=$2" >> $LIT_CONFIG_FILE;
     fi;
   else
     if [ ! -z "$2" ]; then echo "$1=$2" > $LIT_CONFIG_FILE; fi;
