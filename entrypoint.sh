@@ -1,7 +1,7 @@
 #!/bin/sh -e
 
 LIT_DIR=${LIT_DIR:-"/root/.lit"}
-LIT_CONFIG_FILE=$LIT_DIR/lit.conf
+LIT_CONFIG_FILE=$(echo $LIT_DIR/lit.conf | sed "s|\/\/|\/|g")
 
 HTTPSLISTEN=${HTTPSLISTEN:-0.0.0.0:443}
 LND_LNDDIR=${LND_LNDDIR:-"/root/.lnd"}
