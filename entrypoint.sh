@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-LIT_DIR=${LIT_DIR:-"/root/.lit"}
+LIT_DIR=${LIT_DIR:-"/lit"}
 LIT_CONFIG_FILE=$(echo $LIT_DIR/lit.conf | sed "s|\/\/|\/|g")
 
 UIPASSWORD=${UIPASSWORD:-${DEFAULT_UIPASSWORD:-password}}
