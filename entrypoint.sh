@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-LIT_DIR=${LIT_DIR:"~/.lit"}
+LIT_DIR=${LIT_DIR:"/root/.lit"}
 LIT_CONFIG_FILE=$LIT_DIR/lit.conf
 
 HTTPSLISTEN=${HTTPSLISTEN:-0.0.0.0:443}
