@@ -5,9 +5,6 @@ LIT_CONFIG_FILE=$(echo $LIT_DIR/lit.conf | sed "s|\/\/|\/|g")
 
 UIPASSWORD=${UIPASSWORD:-${DEFAULT_UIPASSWORD:-password}}
 HTTPSLISTEN=${HTTPSLISTEN:-0.0.0.0:443}
-LND_LNDDIR=${LND_LNDDIR:-"/root/.lnd"}
-REMOTE_LND_MACAROONDIR=${REMOTE_LND_MACAROONDIR:-"/root/.lnd/data/chain/bitcoin/${REMOTE_LND_NETWORK:-mainnet}/"}
-REMOTE_LND_TLSCERTPATH=${REMOTE_LND_TLSCERTPATH:-"/root/.lnd/tls.cert"}
 
 add_or_add_option_if_non_empty () {
   # Check if config file exists, else create it by adding the option
